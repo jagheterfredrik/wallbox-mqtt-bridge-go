@@ -10,33 +10,29 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type SQLData struct {
-	Lock                  int     `db:"lock"`
-	ChargingEnable        int     `db:"charging_enable"`
-	MaxChargingCurrent    int     `db:"max_charging_current"`
-	HaloBrightness        int     `db:"halo_brightness"`
-	CumulativeAddedEnergy float64 `db:"cumulative_added_energy"`
-	AddedRange            float64 `db:"added_range"`
-}
-
-type RedisState struct {
-	SessionState   int     `redis:"session.state"`
-	ControlPilot   int     `redis:"ctrlPilot"`
-	S2open         int     `redis:"S2open"`
-	ScheduleEnergy float64 `redis:"scheduleEnergy"`
-}
-
-type RedisM2W struct {
-	ChargerStatus int     `redis:"tms.charger_status"`
-	Line1Power    float64 `redis:"tms.line1.power_watt.value"`
-	Line2Power    float64 `redis:"tms.line2.power_watt.value"`
-	Line3Power    float64 `redis:"tms.line3.power_watt.value"`
-}
-
 type DataCache struct {
-	SQL        SQLData
-	RedisState RedisState
-	RedisM2W   RedisM2W
+	SQL struct {
+		Lock                  int     `db:"lock"`
+		ChargingEnable        int     `db:"charging_enable"`
+		MaxChargingCurrent    int     `db:"max_charging_current"`
+		HaloBrightness        int     `db:"halo_brightness"`
+		CumulativeAddedEnergy float64 `db:"cumulative_added_energy"`
+		AddedRange            float64 `db:"added_range"`
+	}
+
+	RedisState struct {
+		SessionState   int     `redis:"session.state"`
+		ControlPilot   int     `redis:"ctrlPilot"`
+		S2open         int     `redis:"S2open"`
+		ScheduleEnergy float64 `redis:"scheduleEnergy"`
+	}
+
+	RedisM2W struct {
+		ChargerStatus int     `redis:"tms.charger_status"`
+		Line1Power    float64 `redis:"tms.line1.power_watt.value"`
+		Line2Power    float64 `redis:"tms.line2.power_watt.value"`
+		Line3Power    float64 `redis:"tms.line3.power_watt.value"`
+	}
 }
 
 type Wallbox struct {
