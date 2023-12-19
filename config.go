@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	"gopkg.in/ini.v1"
 )
 
@@ -15,9 +13,15 @@ type WallboxConfig struct {
 	} `ini:"mqtt"`
 
 	Settings struct {
-		PollingIntervalSeconds time.Duration `ini:"polling_interval_seconds"`
-		DeviceName             string        `ini:"device_name"`
+		PollingIntervalSeconds int    `ini:"polling_interval_seconds"`
+		DeviceName             string `ini:"device_name"`
 	} `ini:"settings"`
+}
+
+func (w *WallboxConfig) SaveTo(path string) {
+	cfg := ini.Empty()
+	cfg.ReflectFrom(w)
+	cfg.SaveTo(path)
 }
 
 func LoadConfig(path string) *WallboxConfig {

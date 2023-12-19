@@ -139,6 +139,10 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 }
 
 func main() {
+	if os.Args[1] == "--config" {
+		RunConfigTui()
+		os.Exit(0)
+	}
 	c := LoadConfig(os.Args[1])
 	w := NewWallbox()
 	w.UpdateCache()
@@ -190,7 +194,7 @@ func main() {
 	topic := topicPrefix + "/+/set"
 	client.Subscribe(topic, 1, messageHandler)
 
-	ticker := time.NewTicker(c.Settings.PollingIntervalSeconds * time.Second)
+	ticker := time.NewTicker(time.Duration(c.Settings.PollingIntervalSeconds) * time.Second)
 	defer ticker.Stop()
 
 	published := make(map[string]interface{})
