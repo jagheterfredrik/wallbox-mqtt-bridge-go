@@ -17,7 +17,6 @@ type WallboxConfig struct {
 	Settings struct {
 		PollingIntervalSeconds time.Duration `ini:"polling_interval_seconds"`
 		DeviceName             string        `ini:"device_name"`
-		LegacyLocking          bool          `ini:"legacy_locking"`
 	} `ini:"settings"`
 }
 
