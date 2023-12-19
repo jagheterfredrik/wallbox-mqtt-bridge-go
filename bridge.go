@@ -14,17 +14,38 @@ import (
 
 func getEntitiesConfig(w *Wallbox) map[string]map[string]interface{} {
 	return map[string]map[string]interface{}{
-		"lock": {
-			"component": "lock",
-			"setter":    w.SetLocked,
-			"getter":    func() interface{} { return w.Data.SQL.Lock },
+		"added_energy": {
+			"component": "sensor",
+			"getter":    func() interface{} { return w.Data.RedisState.ScheduleEnergy },
 			"config": map[string]interface{}{
-				"name":           "Lock",
-				"payload_lock":   1,
-				"payload_unlock": 0,
-				"state_locked":   1,
-				"state_unlocked": 0,
-				"command_topic":  "~/set",
+				"name":                        "Added energy",
+				"device_class":                "energy",
+				"unit_of_measurement":         "Wh",
+				"state_class":                 "total",
+				"suggested_display_precision": 1,
+			},
+		},
+		"added_range": {
+			"component": "sensor",
+			"getter":    func() interface{} { return w.Data.SQL.AddedRange },
+			"config": map[string]interface{}{
+				"name":                        "Added range",
+				"device_class":                "distance",
+				"unit_of_measurement":         "km",
+				"state_class":                 "total",
+				"suggested_display_precision": 1,
+				"icon":                        "mdi:map-marker-distance",
+			},
+		},
+		"cable_connected": {
+			"component": "binary_sensor",
+			"getter":    w.GetCableConnected,
+			"config": map[string]interface{}{
+				"name":         "Cable connected",
+				"payload_on":   1,
+				"payload_off":  0,
+				"icon":         "mdi:ev-plug-type1",
+				"device_class": "plug",
 			},
 		},
 		"charging_enable": {
@@ -39,17 +60,28 @@ func getEntitiesConfig(w *Wallbox) map[string]map[string]interface{} {
 				"icon":          "mdi:ev-station",
 			},
 		},
-		"max_charging_current": {
-			"component": "number",
-			"setter":    w.SetMaxChargingCurrent,
-			"getter":    func() interface{} { return w.Data.SQL.MaxChargingCurrent },
+		"charging_power": {
+			"component": "sensor",
+			"getter": func() interface{} {
+				return w.Data.RedisM2W.Line1Power + w.Data.RedisM2W.Line2Power + w.Data.RedisM2W.Line3Power
+			},
 			"config": map[string]interface{}{
-				"name":                "Max charging current",
-				"command_topic":       "~/set",
-				"min":                 6,
-				"max":                 w.GetAvailableCurrent(),
-				"unit_of_measurement": "A",
-				"device_class":        "current",
+				"name":                        "Charging power",
+				"device_class":                "power",
+				"unit_of_measurement":         "W",
+				"state_class":                 "total",
+				"suggested_display_precision": 1,
+			},
+		},
+		"cumulative_added_energy": {
+			"component": "sensor",
+			"getter":    func() interface{} { return w.Data.SQL.CumulativeAddedEnergy },
+			"config": map[string]interface{}{
+				"name":                        "Cumulative added energy",
+				"device_class":                "energy",
+				"unit_of_measurement":         "Wh",
+				"state_class":                 "total_increasing",
+				"suggested_display_precision": 1,
 			},
 		},
 		"halo_brightness": {
@@ -66,28 +98,30 @@ func getEntitiesConfig(w *Wallbox) map[string]map[string]interface{} {
 				"entity_category":     "config",
 			},
 		},
-		"cable_connected": {
-			"component": "binary_sensor",
-			"getter":    w.GetCableConnected,
+		"lock": {
+			"component": "lock",
+			"setter":    w.SetLocked,
+			"getter":    func() interface{} { return w.Data.SQL.Lock },
 			"config": map[string]interface{}{
-				"name":         "Cable connected",
-				"payload_on":   1,
-				"payload_off":  0,
-				"icon":         "mdi:ev-plug-type1",
-				"device_class": "plug",
+				"name":           "Lock",
+				"payload_lock":   1,
+				"payload_unlock": 0,
+				"state_locked":   1,
+				"state_unlocked": 0,
+				"command_topic":  "~/set",
 			},
 		},
-		"charging_power": {
-			"component": "sensor",
-			"getter": func() interface{} {
-				return w.Data.RedisM2W.Line1Power + w.Data.RedisM2W.Line2Power + w.Data.RedisM2W.Line3Power
-			},
+		"max_charging_current": {
+			"component": "number",
+			"setter":    w.SetMaxChargingCurrent,
+			"getter":    func() interface{} { return w.Data.SQL.MaxChargingCurrent },
 			"config": map[string]interface{}{
-				"name":                        "Charging power",
-				"device_class":                "power",
-				"unit_of_measurement":         "W",
-				"state_class":                 "total",
-				"suggested_display_precision": 1,
+				"name":                "Max charging current",
+				"command_topic":       "~/set",
+				"min":                 6,
+				"max":                 w.GetAvailableCurrent(),
+				"unit_of_measurement": "A",
+				"device_class":        "current",
 			},
 		},
 		"status": {
@@ -95,40 +129,6 @@ func getEntitiesConfig(w *Wallbox) map[string]map[string]interface{} {
 			"getter":    w.GetEffectiveStatus,
 			"config": map[string]interface{}{
 				"name": "Status",
-			},
-		},
-		"added_energy": {
-			"component": "sensor",
-			"getter":    func() interface{} { return w.Data.RedisState.ScheduleEnergy },
-			"config": map[string]interface{}{
-				"name":                        "Added energy",
-				"device_class":                "energy",
-				"unit_of_measurement":         "Wh",
-				"state_class":                 "total",
-				"suggested_display_precision": 1,
-			},
-		},
-		"cumulative_added_energy": {
-			"component": "sensor",
-			"getter":    func() interface{} { return w.Data.SQL.CumulativeAddedEnergy },
-			"config": map[string]interface{}{
-				"name":                        "Cumulative added energy",
-				"device_class":                "energy",
-				"unit_of_measurement":         "Wh",
-				"state_class":                 "total_increasing",
-				"suggested_display_precision": 1,
-			},
-		},
-		"added_range": {
-			"component": "sensor",
-			"getter":    func() interface{} { return w.Data.SQL.AddedRange },
-			"config": map[string]interface{}{
-				"name":                        "Added range",
-				"device_class":                "distance",
-				"unit_of_measurement":         "km",
-				"state_class":                 "total",
-				"suggested_display_precision": 1,
-				"icon":                        "mdi:map-marker-distance",
 			},
 		},
 	}
