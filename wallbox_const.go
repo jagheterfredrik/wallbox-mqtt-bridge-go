@@ -1,7 +1,7 @@
 package main
 
 var wallboxStatusCodes = []string{
-	"Ready",
+    "Ready",
     "Charging",
     "Connected waiting car",
     "Connected waiting schedule",

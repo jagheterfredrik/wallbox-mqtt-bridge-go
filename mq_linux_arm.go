@@ -1,6 +1,6 @@
 package main
 
 const(
-	MqOpenSyscall       = 274
-	MqTimedSendSyscall  = 276
+    MqOpenSyscall       = 274
+    MqTimedSendSyscall  = 276
 )
