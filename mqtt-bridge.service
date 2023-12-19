@@ -1,0 +1,15 @@
+[Unit]
+Description=MQTT Bridge
+After=network.target
+Requires=mysqld.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart=/home/root/mqtt-bridge/bridge /home/root/mqtt-bridge/bridge.ini
+
+[Install]
+WantedBy=multi-user.target
