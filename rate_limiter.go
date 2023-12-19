@@ -1,35 +1,35 @@
 package main
 
 import (
-    "math"
-    "time"
+	"math"
+	"time"
 )
 
 type DeltaRateLimit struct {
-    lastTime    time.Time
-    lastValue   float64
-    interval    time.Duration
-    valueChange float64
+	lastTime    time.Time
+	lastValue   float64
+	interval    time.Duration
+	valueChange float64
 }
 
 func NewDeltaRateLimit(interval time.Duration, valueChange float64) *DeltaRateLimit {
-    return &DeltaRateLimit{
-        interval:    interval * time.Second,
-        valueChange: valueChange,
-    }
+	return &DeltaRateLimit{
+		interval:    interval * time.Second,
+		valueChange: valueChange,
+	}
 }
 
 func (c *DeltaRateLimit) Allow(value float64) bool {
-    now := time.Now()
+	now := time.Now()
 
-    if math.Abs(value-c.lastValue) < c.valueChange {
-        if now.Sub(c.lastTime) < c.interval {
-            return false
-        }
-    }
+	if math.Abs(value-c.lastValue) < c.valueChange {
+		if now.Sub(c.lastTime) < c.interval {
+			return false
+		}
+	}
 
-    c.lastTime = now
-    c.lastValue = value
+	c.lastTime = now
+	c.lastValue = value
 
-    return true
+	return true
 }
