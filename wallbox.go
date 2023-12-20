@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"strconv"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -108,8 +107,8 @@ func (w *Wallbox) GetUserId() string {
 	return userId
 }
 
-func (w *Wallbox) GetAvailableCurrent() string {
-	var availableCurrent string
+func (w *Wallbox) GetAvailableCurrent() int {
+	var availableCurrent int
 	w.sqlClient.QueryRow("SELECT `max_avbl_current` FROM `state_values` ORDER BY `id` DESC LIMIT 1").Scan(&availableCurrent)
 	return availableCurrent
 }
@@ -125,8 +124,7 @@ func SendToPosixQueue(path, data string) {
 	mq_close(mq)
 }
 
-func (w *Wallbox) SetLocked(lockStr string) {
-	lock, _ := strconv.Atoi(lockStr)
+func (w *Wallbox) SetLocked(lock int) {
 	w.UpdateCache()
 	if lock == w.Data.SQL.Lock {
 		return
@@ -139,8 +137,7 @@ func (w *Wallbox) SetLocked(lockStr string) {
 	}
 }
 
-func (w *Wallbox) SetChargingEnable(enableStr string) {
-	enable, _ := strconv.Atoi(enableStr)
+func (w *Wallbox) SetChargingEnable(enable int) {
 	w.UpdateCache()
 	if enable == w.Data.SQL.ChargingEnable {
 		return
@@ -152,22 +149,22 @@ func (w *Wallbox) SetChargingEnable(enableStr string) {
 	}
 }
 
-func (w *Wallbox) SetMaxChargingCurrent(current string) {
+func (w *Wallbox) SetMaxChargingCurrent(current int) {
 	w.sqlClient.MustExec("UPDATE `wallbox_config` SET `max_charging_current`=?", current)
 }
 
-func (w *Wallbox) SetHaloBrightness(brightness string) {
+func (w *Wallbox) SetHaloBrightness(brightness int) {
 	w.sqlClient.MustExec("UPDATE `wallbox_config` SET `halo_brightness`=?", brightness)
 }
 
-func (w *Wallbox) GetCableConnected() interface{} {
+func (w *Wallbox) GetCableConnected() int {
 	if w.Data.RedisM2W.ChargerStatus == 0 || w.Data.RedisM2W.ChargerStatus == 6 {
 		return 0
 	}
 	return 1
 }
 
-func (w *Wallbox) GetEffectiveStatus() interface{} {
+func (w *Wallbox) GetEffectiveStatus() string {
 	tmsStatus := w.Data.RedisM2W.ChargerStatus
 	state := w.Data.RedisState.SessionState
 
@@ -177,4 +174,8 @@ func (w *Wallbox) GetEffectiveStatus() interface{} {
 	}
 
 	return wallboxStatusCodes[tmsStatus]
+}
+
+func Str(val interface{}) {
+
 }
