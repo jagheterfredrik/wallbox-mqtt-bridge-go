@@ -21,3 +21,44 @@ var wallboxStatusCodes = []string{
 	"Updating",
 	"Queue by eco smart",
 }
+
+var stateMachineStates = map[int]string{
+	0xE:  "Error",
+	0xF:  "Unviable",
+	0xA1: "Ready",
+	0xA2: "PS Unconfig",
+	0xA3: "Unavailable",
+	0xA4: "Finish",
+	0xA5: "Reserved",
+	0xA6: "Updating",
+	0xB1: "Connected 1", // Make new session?
+	0xB2: "Connected 2",
+	0xB3: "Connected 3", // Waiting schedule ?
+	0xB4: "Connected 4",
+	0xB5: "Connected 5", // Connected waiting car ?
+	0xB6: "Connected 6", // Paused
+	0xB7: "Waiting 1",
+	0xB8: "Waiting 2",
+	0xB9: "Waiting 3",
+	0xBA: "Waiting 4",
+	0xBB: "Mid 1",
+	0xBC: "Mid 2",
+	0xBD: "Waiting eco power",
+	0xC1: "Charging 1",
+	0xC2: "Charging 2",
+	0xC3: "Discharging 1",
+	0xC4: "Discharging 2",
+	0xD1: "Lock",
+	0xD2: "Wait Unlock",
+}
+
+var controlPilotStates = map[int]string{
+	0xE:  "Error",
+	0xF:  "Failure",
+	0xA1: "Ready 1", // S1 at 12V, car not connected
+	0xA2: "Ready 2",
+	0xB1: "Connected 1", // S1 at 9V, car connected not allowed charge
+	0xB2: "Connected 2", // S1 at Oscillator, car connected allowed charge
+	0xC1: "Charging 1",
+	0xC2: "Charging 2", // S2 closed
+}

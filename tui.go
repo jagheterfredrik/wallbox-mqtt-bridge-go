@@ -47,6 +47,16 @@ func AskConfirmOrNewInt(field *int, name string) {
 	}
 }
 
+func AskConfirmOrNewBool(field *bool, name string) {
+	fmt.Printf("%s (y/N): ", name)
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
+	input = strings.TrimSpace(input)
+	if len(input) > 0 && input == "y" {
+		*field = true
+	}
+}
+
 func InstallService() {
 	ioutil.WriteFile("/lib/systemd/system/mqtt-bridge.service", []byte(service), 0644)
 	var cmd *exec.Cmd
@@ -66,6 +76,7 @@ func RunConfigTui() {
 	config.MQTT.Password = ""
 	config.Settings.PollingIntervalSeconds = 1
 	config.Settings.DeviceName = "Wallbox"
+	config.Settings.DebugSensors = false
 
 	AskConfirmOrNew(&config.MQTT.Host, "MQTT Host")
 	AskConfirmOrNewInt(&config.MQTT.Port, "MQTT Port")
@@ -73,8 +84,9 @@ func RunConfigTui() {
 	AskConfirmOrNew(&config.MQTT.Password, "MQTT Password")
 	AskConfirmOrNewInt(&config.Settings.PollingIntervalSeconds, "Polling interval")
 	AskConfirmOrNew(&config.Settings.DeviceName, "Device name")
+	AskConfirmOrNewBool(&config.Settings.DebugSensors, "Debug sensors")
 
 	config.SaveTo("bridge.ini")
 
-	InstallService()
+	// InstallService()
 }
