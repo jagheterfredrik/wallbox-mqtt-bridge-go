@@ -27,11 +27,11 @@ func main() {
 
 	serialNumber := w.GetSerialNumber()
 	entityConfig := getEntities(w)
-    if c.Settings.DebugSensors {
-        for k, v := range getDebugEntities(w) {
-            entityConfig[k] = v
-        }
-    }
+	if c.Settings.DebugSensors {
+		for k, v := range getDebugEntities(w) {
+			entityConfig[k] = v
+		}
+	}
 
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", c.MQTT.Host, c.MQTT.Port))
