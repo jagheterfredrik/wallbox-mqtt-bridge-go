@@ -1,8 +1,10 @@
-package main
+package bridge
 
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/jagheterfredrik/wallbox-mqtt-bridge/app/wallbox"
 )
 
 type Entity struct {
@@ -22,7 +24,7 @@ func strToFloat(val string) float64 {
 	return f
 }
 
-func getEntities(w *Wallbox) map[string]Entity {
+func getEntities(w *wallbox.Wallbox) map[string]Entity {
 	return map[string]Entity{
 		"added_energy": {
 			Component: "sensor",
@@ -143,13 +145,11 @@ func getEntities(w *Wallbox) map[string]Entity {
 	}
 }
 
-func getDebugEntities(w *Wallbox) map[string]Entity {
+func getDebugEntities(w *wallbox.Wallbox) map[string]Entity {
 	return map[string]Entity{
 		"control_pilot": {
 			Component: "sensor",
-			Getter: func() string {
-				return fmt.Sprintf("%d: %s", w.Data.RedisState.ControlPilot, controlPilotStates[w.Data.RedisState.ControlPilot])
-			},
+			Getter: w.GetControlPilotStatus,
 			Config: map[string]string{
 				"name": "Control pilot",
 			},
@@ -163,9 +163,7 @@ func getDebugEntities(w *Wallbox) map[string]Entity {
 		},
 		"state_machine_state": {
 			Component: "sensor",
-			Getter: func() string {
-				return fmt.Sprintf("%d: %s", w.Data.RedisState.SessionState, stateMachineStates[w.Data.RedisState.SessionState])
-			},
+			Getter: w.GetStateMachineState,
 			Config: map[string]string{
 				"name": "State machine",
 			},

@@ -1,4 +1,4 @@
-package main
+package wallbox
 
 const (
 	MqOpenSyscall      = 274

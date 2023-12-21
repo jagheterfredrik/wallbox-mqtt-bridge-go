@@ -1,4 +1,4 @@
-package main
+package bridge
 
 import (
 	"bufio"
@@ -27,7 +27,7 @@ ExecStart=/home/root/mqtt-bridge/bridge /home/root/mqtt-bridge/bridge.ini
 WantedBy=multi-user.target
 `
 
-func AskConfirmOrNew(field *string, name string) {
+func askConfirmOrNew(field *string, name string) {
 	fmt.Printf("%s (%s): ", name, *field)
 	reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n')
@@ -37,7 +37,7 @@ func AskConfirmOrNew(field *string, name string) {
 	}
 }
 
-func AskConfirmOrNewInt(field *int, name string) {
+func askConfirmOrNewInt(field *int, name string) {
 	fmt.Printf("%s (%d): ", name, *field)
 	reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n')
@@ -47,7 +47,7 @@ func AskConfirmOrNewInt(field *int, name string) {
 	}
 }
 
-func AskConfirmOrNewBool(field *bool, name string) {
+func askConfirmOrNewBool(field *bool, name string) {
 	fmt.Printf("%s (y/N): ", name)
 	reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n')
@@ -57,7 +57,7 @@ func AskConfirmOrNewBool(field *bool, name string) {
 	}
 }
 
-func InstallService() {
+func installService() {
 	ioutil.WriteFile("/lib/systemd/system/mqtt-bridge.service", []byte(service), 0644)
 	var cmd *exec.Cmd
 	cmd = exec.Command("systemctl", "daemon-reload")
@@ -68,7 +68,7 @@ func InstallService() {
 	cmd.Run()
 }
 
-func RunConfigTui() {
+func RunTuiSetup() {
 	config := WallboxConfig{}
 	config.MQTT.Host = "127.0.0.1"
 	config.MQTT.Port = 1883
@@ -78,15 +78,15 @@ func RunConfigTui() {
 	config.Settings.DeviceName = "Wallbox"
 	config.Settings.DebugSensors = false
 
-	AskConfirmOrNew(&config.MQTT.Host, "MQTT Host")
-	AskConfirmOrNewInt(&config.MQTT.Port, "MQTT Port")
-	AskConfirmOrNew(&config.MQTT.Username, "MQTT Username")
-	AskConfirmOrNew(&config.MQTT.Password, "MQTT Password")
-	AskConfirmOrNewInt(&config.Settings.PollingIntervalSeconds, "Polling interval")
-	AskConfirmOrNew(&config.Settings.DeviceName, "Device name")
-	AskConfirmOrNewBool(&config.Settings.DebugSensors, "Debug sensors")
+	askConfirmOrNew(&config.MQTT.Host, "MQTT Host")
+	askConfirmOrNewInt(&config.MQTT.Port, "MQTT Port")
+	askConfirmOrNew(&config.MQTT.Username, "MQTT Username")
+	askConfirmOrNew(&config.MQTT.Password, "MQTT Password")
+	askConfirmOrNewInt(&config.Settings.PollingIntervalSeconds, "Polling interval")
+	askConfirmOrNew(&config.Settings.DeviceName, "Device name")
+	askConfirmOrNewBool(&config.Settings.DebugSensors, "Debug sensors")
 
 	config.SaveTo("bridge.ini")
 
-	// InstallService()
+	installService()
 }

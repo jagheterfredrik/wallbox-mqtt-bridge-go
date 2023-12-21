@@ -1,4 +1,4 @@
-package main
+package wallbox
 
 var wallboxStatusCodes = []string{
 	"Ready",
