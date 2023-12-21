@@ -168,9 +168,8 @@ func (w *Wallbox) GetEffectiveStatus() string {
 	tmsStatus := w.Data.RedisM2W.ChargerStatus
 	state := w.Data.RedisState.SessionState
 
-	// The wallbox app shows "Locked" for longer than the TMS status
-	if state == 210 { // Wait unlock
-		tmsStatus = 6 // Locked
+	if override, ok := stateOverrides[state]; ok {
+		tmsStatus = override
 	}
 
 	return wallboxStatusCodes[tmsStatus]
