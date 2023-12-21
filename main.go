@@ -1,8 +1,8 @@
 package main
 
 import (
-	"os"
 	"github.com/jagheterfredrik/wallbox-mqtt-bridge/app"
+	"os"
 )
 
 func main() {
