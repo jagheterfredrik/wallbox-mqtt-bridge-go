@@ -174,7 +174,3 @@ func (w *Wallbox) GetEffectiveStatus() string {
 
 	return wallboxStatusCodes[tmsStatus]
 }
-
-func Str(val interface{}) {
-
-}
