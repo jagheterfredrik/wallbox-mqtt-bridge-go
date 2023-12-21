@@ -21,9 +21,9 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 func LaunchBridge(configPath string) {
 	c := LoadConfig(configPath)
 	w := wallbox.New()
-	w.UpdateCache()
+	w.RefreshData()
 
-	serialNumber := w.GetSerialNumber()
+	serialNumber := w.SerialNumber()
 	entityConfig := getEntities(w)
 	if c.Settings.DebugSensors {
 		for k, v := range getDebugEntities(w) {
@@ -90,7 +90,7 @@ func LaunchBridge(configPath string) {
 	for {
 		select {
 		case <-ticker.C:
-			w.UpdateCache()
+			w.RefreshData()
 			for key, val := range entityConfig {
 				payload := val.Getter()
 				bytePayload := []byte(fmt.Sprint(payload))

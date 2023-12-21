@@ -51,7 +51,7 @@ func getEntities(w *wallbox.Wallbox) map[string]Entity {
 		},
 		"cable_connected": {
 			Component: "binary_sensor",
-			Getter:    func() string { return strconv.Itoa(w.GetCableConnected()) },
+			Getter:    func() string { return strconv.Itoa(w.CableConnected()) },
 			Config: map[string]string{
 				"name":         "Cable connected",
 				"payload_on":   "1",
@@ -130,14 +130,14 @@ func getEntities(w *wallbox.Wallbox) map[string]Entity {
 				"name":                "Max charging current",
 				"command_topic":       "~/set",
 				"min":                 "6",
-				"max":                 strconv.Itoa(w.GetAvailableCurrent()),
+				"max":                 strconv.Itoa(w.AvailableCurrent()),
 				"unit_of_measurement": "A",
 				"device_class":        "current",
 			},
 		},
 		"status": {
 			Component: "sensor",
-			Getter:    w.GetEffectiveStatus,
+			Getter:    w.EffectiveStatus,
 			Config: map[string]string{
 				"name": "Status",
 			},
@@ -149,7 +149,7 @@ func getDebugEntities(w *wallbox.Wallbox) map[string]Entity {
 	return map[string]Entity{
 		"control_pilot": {
 			Component: "sensor",
-			Getter: w.GetControlPilotStatus,
+			Getter: w.ControlPilotStatus,
 			Config: map[string]string{
 				"name": "Control pilot",
 			},
@@ -163,7 +163,7 @@ func getDebugEntities(w *wallbox.Wallbox) map[string]Entity {
 		},
 		"state_machine_state": {
 			Component: "sensor",
-			Getter: w.GetStateMachineState,
+			Getter: w.StateMachineState,
 			Config: map[string]string{
 				"name": "State machine",
 			},

@@ -59,7 +59,7 @@ func New() *Wallbox {
 	return &w
 }
 
-func (w *Wallbox) UpdateCache() {
+func (w *Wallbox) RefreshData() {
 	ctx := context.Background()
 
 	stateRes := w.redisClient.HGetAll(ctx, "state")
@@ -96,19 +96,19 @@ func (w *Wallbox) UpdateCache() {
 	w.sqlClient.Get(&w.Data.SQL, query)
 }
 
-func (w *Wallbox) GetSerialNumber() string {
+func (w *Wallbox) SerialNumber() string {
 	var serialNumber string
 	w.sqlClient.Get(&serialNumber, "SELECT `serial_num` FROM charger_info")
 	return serialNumber
 }
 
-func (w *Wallbox) GetUserId() string {
+func (w *Wallbox) UserId() string {
 	var userId string
 	w.sqlClient.QueryRow("SELECT `user_id` FROM `users` WHERE `user_id` != 1 ORDER BY `user_id` DESC LIMIT 1").Scan(&userId)
 	return userId
 }
 
-func (w *Wallbox) GetAvailableCurrent() int {
+func (w *Wallbox) AvailableCurrent() int {
 	var availableCurrent int
 	w.sqlClient.QueryRow("SELECT `max_avbl_current` FROM `state_values` ORDER BY `id` DESC LIMIT 1").Scan(&availableCurrent)
 	return availableCurrent
@@ -126,20 +126,20 @@ func sendToPosixQueue(path, data string) {
 }
 
 func (w *Wallbox) SetLocked(lock int) {
-	w.UpdateCache()
+	w.RefreshData()
 	if lock == w.Data.SQL.Lock {
 		return
 	}
 	if lock == 1 {
 		sendToPosixQueue("WALLBOX_MYWALLBOX_WALLBOX_LOGIN", "EVENT_REQUEST_LOCK")
 	} else {
-		userId := w.GetUserId()
+		userId := w.UserId()
 		sendToPosixQueue("WALLBOX_MYWALLBOX_WALLBOX_LOGIN", "EVENT_REQUEST_LOGIN#"+userId+".000000")
 	}
 }
 
 func (w *Wallbox) SetChargingEnable(enable int) {
-	w.UpdateCache()
+	w.RefreshData()
 	if enable == w.Data.SQL.ChargingEnable {
 		return
 	}
@@ -158,14 +158,14 @@ func (w *Wallbox) SetHaloBrightness(brightness int) {
 	w.sqlClient.MustExec("UPDATE `wallbox_config` SET `halo_brightness`=?", brightness)
 }
 
-func (w *Wallbox) GetCableConnected() int {
+func (w *Wallbox) CableConnected() int {
 	if w.Data.RedisM2W.ChargerStatus == 0 || w.Data.RedisM2W.ChargerStatus == 6 {
 		return 0
 	}
 	return 1
 }
 
-func (w *Wallbox) GetEffectiveStatus() string {
+func (w *Wallbox) EffectiveStatus() string {
 	tmsStatus := w.Data.RedisM2W.ChargerStatus
 	state := w.Data.RedisState.SessionState
 
@@ -176,10 +176,10 @@ func (w *Wallbox) GetEffectiveStatus() string {
 	return wallboxStatusCodes[tmsStatus]
 }
 
-func (w *Wallbox) GetControlPilotStatus() string {
+func (w *Wallbox) ControlPilotStatus() string {
 	return fmt.Sprintf("%d: %s", w.Data.RedisState.ControlPilot, controlPilotStates[w.Data.RedisState.ControlPilot])
 }
 
-func (w *Wallbox) GetStateMachineState() string {
+func (w *Wallbox) StateMachineState() string {
 	return fmt.Sprintf("%d: %s", w.Data.RedisState.SessionState, stateMachineStates[w.Data.RedisState.SessionState])
 }
