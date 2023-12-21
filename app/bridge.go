@@ -11,7 +11,7 @@ import (
 
 	"github.com/jagheterfredrik/wallbox-mqtt-bridge/app/ratelimit"
 	"github.com/jagheterfredrik/wallbox-mqtt-bridge/app/wallbox"
-	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/eclipse/paho.mqtt.golang"
 )
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
