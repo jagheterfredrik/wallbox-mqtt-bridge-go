@@ -1,8 +1,9 @@
-package main
+package wallbox
 
 import (
 	"bytes"
 	"context"
+	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -40,7 +41,7 @@ type Wallbox struct {
 	Data        DataCache
 }
 
-func NewWallbox() *Wallbox {
+func New() *Wallbox {
 	var w Wallbox
 
 	var err error
@@ -113,15 +114,15 @@ func (w *Wallbox) GetAvailableCurrent() int {
 	return availableCurrent
 }
 
-func SendToPosixQueue(path, data string) {
+func sendToPosixQueue(path, data string) {
 	pathBytes := append([]byte(path), 0)
-	mq := mq_open(pathBytes)
+	mq := mqOpen(pathBytes)
 
 	event := []byte(data)
 	eventPaddedBytes := append(event, bytes.Repeat([]byte{0x00}, 1024-len(event))...)
 
-	mq_timedsend(mq, eventPaddedBytes)
-	mq_close(mq)
+	mqTimedsend(mq, eventPaddedBytes)
+	mqClose(mq)
 }
 
 func (w *Wallbox) SetLocked(lock int) {
@@ -130,10 +131,10 @@ func (w *Wallbox) SetLocked(lock int) {
 		return
 	}
 	if lock == 1 {
-		SendToPosixQueue("WALLBOX_MYWALLBOX_WALLBOX_LOGIN", "EVENT_REQUEST_LOCK")
+		sendToPosixQueue("WALLBOX_MYWALLBOX_WALLBOX_LOGIN", "EVENT_REQUEST_LOCK")
 	} else {
 		userId := w.GetUserId()
-		SendToPosixQueue("WALLBOX_MYWALLBOX_WALLBOX_LOGIN", "EVENT_REQUEST_LOGIN#"+userId+".000000")
+		sendToPosixQueue("WALLBOX_MYWALLBOX_WALLBOX_LOGIN", "EVENT_REQUEST_LOGIN#"+userId+".000000")
 	}
 }
 
@@ -143,9 +144,9 @@ func (w *Wallbox) SetChargingEnable(enable int) {
 		return
 	}
 	if enable == 1 {
-		SendToPosixQueue("WALLBOX_MYWALLBOX_WALLBOX_STATEMACHINE", "EVENT_REQUEST_USER_ACTION#1.000000")
+		sendToPosixQueue("WALLBOX_MYWALLBOX_WALLBOX_STATEMACHINE", "EVENT_REQUEST_USER_ACTION#1.000000")
 	} else {
-		SendToPosixQueue("WALLBOX_MYWALLBOX_WALLBOX_STATEMACHINE", "EVENT_REQUEST_USER_ACTION#2.000000")
+		sendToPosixQueue("WALLBOX_MYWALLBOX_WALLBOX_STATEMACHINE", "EVENT_REQUEST_USER_ACTION#2.000000")
 	}
 }
 
@@ -173,4 +174,12 @@ func (w *Wallbox) GetEffectiveStatus() string {
 	}
 
 	return wallboxStatusCodes[tmsStatus]
+}
+
+func (w *Wallbox) GetControlPilotStatus() string {
+	return fmt.Sprintf("%d: %s", w.Data.RedisState.ControlPilot, controlPilotStates[w.Data.RedisState.ControlPilot])
+}
+
+func (w *Wallbox) GetStateMachineState() string {
+	return fmt.Sprintf("%d: %s", w.Data.RedisState.SessionState, stateMachineStates[w.Data.RedisState.SessionState])
 }

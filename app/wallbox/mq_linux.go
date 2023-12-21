@@ -1,11 +1,11 @@
-package main
+package wallbox
 
 import (
 	"syscall"
 	"unsafe"
 )
 
-func mq_open(path []byte) uintptr {
+func mqOpen(path []byte) uintptr {
 	mq, _, _ := syscall.Syscall6(
 		uintptr(MqOpenSyscall),
 		uintptr(unsafe.Pointer(&path[0])),
@@ -19,7 +19,7 @@ func mq_open(path []byte) uintptr {
 	return mq
 }
 
-func mq_timedsend(fd uintptr, data []byte) uintptr {
+func mqTimedsend(fd uintptr, data []byte) uintptr {
 	mqLock, _, _ := syscall.Syscall6(
 		uintptr(MqTimedSendSyscall),
 		uintptr(fd),
@@ -33,7 +33,7 @@ func mq_timedsend(fd uintptr, data []byte) uintptr {
 	return mqLock
 }
 
-func mq_close(fd uintptr) {
+func mqClose(fd uintptr) {
 	fdi := int(fd)
 	syscall.Close(fdi)
 }

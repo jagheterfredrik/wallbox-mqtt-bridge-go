@@ -1,4 +1,4 @@
-package main
+package bridge
 
 import (
 	"encoding/json"
@@ -9,6 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/jagheterfredrik/wallbox-mqtt-bridge/app/ratelimit"
+	"github.com/jagheterfredrik/wallbox-mqtt-bridge/app/wallbox"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
@@ -16,13 +18,9 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 	panic("Connection to MQTT lost")
 }
 
-func main() {
-	if os.Args[1] == "--config" {
-		RunConfigTui()
-		os.Exit(0)
-	}
-	c := LoadConfig(os.Args[1])
-	w := NewWallbox()
+func LaunchBridge(configPath string) {
+	c := LoadConfig(configPath)
+	w := wallbox.New()
 	w.UpdateCache()
 
 	serialNumber := w.GetSerialNumber()
@@ -84,9 +82,9 @@ func main() {
 	defer ticker.Stop()
 
 	published := make(map[string]interface{})
-	rateLimiter := map[string]*DeltaRateLimit{
-		"charging_power": NewDeltaRateLimit(10, 100),
-		"added_energy":   NewDeltaRateLimit(10, 50),
+	rateLimiter := map[string]*ratelimit.DeltaRateLimit{
+		"charging_power": ratelimit.NewDeltaRateLimit(10, 100),
+		"added_energy":   ratelimit.NewDeltaRateLimit(10, 50),
 	}
 
 	for {
