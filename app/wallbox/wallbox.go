@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"reflect"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -59,10 +60,23 @@ func New() *Wallbox {
 	return &w
 }
 
+func getRedisFields(obj interface{}) []string {
+	var result []string
+	val := reflect.ValueOf(obj)
+	typ := val.Type()
+
+	for i := 0; i < val.NumField(); i++ {
+		field := typ.Field(i)
+		result = append(result, field.Tag.Get("redis"))
+	}
+
+	return result
+}
+
 func (w *Wallbox) RefreshData() {
 	ctx := context.Background()
 
-	stateRes := w.redisClient.HGetAll(ctx, "state")
+	stateRes := w.redisClient.HMGet(ctx, "state", getRedisFields(w.Data.RedisState)...)
 	if stateRes.Err() != nil {
 		panic(stateRes.Err())
 	}
@@ -71,7 +85,7 @@ func (w *Wallbox) RefreshData() {
 		panic(err)
 	}
 
-	m2wRes := w.redisClient.HGetAll(ctx, "m2w")
+	m2wRes := w.redisClient.HMGet(ctx, "m2w", getRedisFields(w.Data.RedisM2W)...)
 	if m2wRes.Err() != nil {
 		panic(m2wRes.Err())
 	}
