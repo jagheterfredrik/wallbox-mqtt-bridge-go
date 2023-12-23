@@ -31,10 +31,14 @@ func LaunchBridge(configPath string) {
 		}
 	}
 
+	topicPrefix := "wallbox_" + serialNumber
+	availabilityTopic := topicPrefix + "/availability"
+
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", c.MQTT.Host, c.MQTT.Port))
 	opts.SetUsername(c.MQTT.Username)
 	opts.SetPassword(c.MQTT.Password)
+	opts.SetWill(availabilityTopic, "offline", 1, true)
 	opts.OnConnectionLost = connectLostHandler
 
 	client := mqtt.NewClient(opts)
@@ -42,15 +46,14 @@ func LaunchBridge(configPath string) {
 		panic(token.Error())
 	}
 
-	topicPrefix := "wallbox_" + serialNumber
-
 	for key, val := range entityConfig {
 		component := val.Component
 		uid := serialNumber + "_" + key
 		config := map[string]interface{}{
-			"~":           topicPrefix + "/" + key,
-			"state_topic": "~/state",
-			"unique_id":   uid,
+			"~":                  topicPrefix + "/" + key,
+			"availability_topic": availabilityTopic,
+			"state_topic":        "~/state",
+			"unique_id":          uid,
 			"device": map[string]string{
 				"identifiers": serialNumber,
 				"name":        c.Settings.DeviceName,
@@ -66,6 +69,9 @@ func LaunchBridge(configPath string) {
 		token := client.Publish("homeassistant/"+component+"/"+uid+"/config", 1, true, jsonPayload)
 		token.Wait()
 	}
+
+	token := client.Publish(availabilityTopic, 1, true, "online")
+	token.Wait()
 
 	messageHandler := func(client mqtt.Client, msg mqtt.Message) {
 		field := strings.Split(msg.Topic(), "/")[1]
@@ -106,11 +112,12 @@ func LaunchBridge(configPath string) {
 			}
 		case <-interrupt():
 			fmt.Println("Interrupted. Exiting...")
+			token := client.Publish(availabilityTopic, 1, true, "offline")
+			token.Wait()
 			client.Disconnect(250)
 			os.Exit(0)
 		}
 	}
-
 }
 
 func interrupt() <-chan os.Signal {
