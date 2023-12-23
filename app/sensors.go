@@ -149,7 +149,7 @@ func getDebugEntities(w *wallbox.Wallbox) map[string]Entity {
 	return map[string]Entity{
 		"control_pilot": {
 			Component: "sensor",
-			Getter: w.ControlPilotStatus,
+			Getter:    w.ControlPilotStatus,
 			Config: map[string]string{
 				"name": "Control pilot",
 			},
@@ -163,7 +163,7 @@ func getDebugEntities(w *wallbox.Wallbox) map[string]Entity {
 		},
 		"state_machine_state": {
 			Component: "sensor",
-			Getter: w.StateMachineState,
+			Getter:    w.StateMachineState,
 			Config: map[string]string{
 				"name": "State machine",
 			},

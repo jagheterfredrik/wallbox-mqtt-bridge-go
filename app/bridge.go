@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/eclipse/paho.mqtt.golang"
 	"github.com/jagheterfredrik/wallbox-mqtt-bridge/app/ratelimit"
 	"github.com/jagheterfredrik/wallbox-mqtt-bridge/app/wallbox"
-	"github.com/eclipse/paho.mqtt.golang"
 )
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
